@@ -1,11 +1,16 @@
 package org.folio.auth.authtokenmodule.tokens.expiration;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.folio.auth.authtokenmodule.storage.ApiTokenStore;
 import org.folio.auth.authtokenmodule.tokens.AccessToken;
 import org.folio.auth.authtokenmodule.tokens.RefreshToken;
 
 import java.util.HashMap;
 
 public class TokenExpiration {
+  private static final Logger LOG = LogManager.getLogger(TokenExpiration.class);
+
   public static final String TOKEN_EXPIRATION_SECONDS = "token.expiration.seconds";
 
   public static final String TOKEN_EXPIRATION_SECONDS_ENV = "TOKEN_EXPIRATION_SECONDS";
@@ -32,7 +37,7 @@ public class TokenExpiration {
   public long getAccessTokenExpiration(String tenant) {
     var tenantConfiguration = tokenConfiguration.get(tenant);
     return (tenantConfiguration == null) ? getDefaultConfiguration().accessTokenExpirationSeconds() :
-        tenantConfiguration.accessTokenExpirationSeconds();
+      tenantConfiguration.accessTokenExpirationSeconds();
   }
 
   public long getRefreshTokenExpiration(String tenant) {
@@ -47,9 +52,9 @@ public class TokenExpiration {
 
   private void tryAddDefaultConfiguration() {
     tokenConfiguration.putIfAbsent(null,
-        new TokenExpirationConfiguration(
-            AccessToken.DEFAULT_EXPIRATION_SECONDS,
-            RefreshToken.DEFAULT_EXPIRATION_SECONDS));
+      new TokenExpirationConfiguration(
+        AccessToken.DEFAULT_EXPIRATION_SECONDS,
+        RefreshToken.DEFAULT_EXPIRATION_SECONDS));
   }
 
   private void parseExpirationConfig(String tokenExpirationConfig) {
@@ -85,12 +90,15 @@ public class TokenExpiration {
         accessTokenExpiration = AccessToken.DEFAULT_EXPIRATION_SECONDS;
       }
 
-      if (refreshTokenExpiration <=0) {
+      if (refreshTokenExpiration <= 0) {
         refreshTokenExpiration = RefreshToken.DEFAULT_EXPIRATION_SECONDS;
       }
 
       tokenConfiguration.put(tenantId,
-          new TokenExpirationConfiguration(accessTokenExpiration, refreshTokenExpiration));
+        new TokenExpirationConfiguration(accessTokenExpiration, refreshTokenExpiration));
+
+      LOG.info("Configured expiration for tenant: {} with accessTokenExpiration: {} and refreshTokenExpiration: {}",
+        refreshTokenExpiration, accessTokenExpiration, refreshTokenExpiration);
     }
   }
 
